@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BetereMarktplaats</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f5e55'/%3E%3Cpath d='M9 17l5 5 9-12' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Betere<span>Marktplaats</span></h1>
+    <nav>
+      <button class="tab on" data-tab="search">Zoeken</button>
+      <button class="tab" data-tab="alarms">Alarmen <span class="count" id="alarmCount" hidden></span></button>
+    </nav>
+    <button class="linkbtn" id="notifyBtn" hidden>Meldingen aanzetten</button>
+  </header>
+
+  <div class="banner" id="fbBanner" hidden></div>
+
+  <section id="search">
+    <form class="panel" id="form" autocomplete="off">
+      <div class="qrow">
+        <input id="q" type="search" placeholder="Wat zoek je? bijv. damesfiets" aria-label="Zoekterm" required>
+        <button class="go" type="submit">Zoeken</button>
+      </div>
+      <details class="filters" id="filters"><summary>Filters</summary>
+      <div class="grid">
+        <div class="field"><label for="min">Prijs vanaf</label><div class="euro"><input id="min" type="number" min="0" placeholder="0"></div></div>
+        <div class="field"><label for="max">Prijs tot</label><div class="euro"><input id="max" type="number" min="0" placeholder="geen"></div></div>
+        <div class="field"><label for="pc">Postcode</label><input id="pc" placeholder="3011AA" maxlength="7"></div>
+        <div class="field"><label for="km">Afstand</label><select id="km"><option value="">Heel NL</option><option>5</option><option>10</option><option>25</option><option>50</option><option>100</option></select></div>
+        <div class="field"><label for="city">Facebook-stad</label><input id="city" placeholder="vult vanzelf in"></div>
+        <div class="field"><label for="days">Geplaatst</label><select id="days"><option value="">Altijd</option><option value="1">Vandaag</option><option value="7">Deze week</option><option value="30">Deze maand</option></select></div>
+        <div class="field"><label for="wheel">Wielmaat</label><select id="wheel"><option value="">Alle</option><option value="26">26 inch</option><option value="27.5">27,5 inch</option><option value="28">28 inch</option><option value="29">29 inch</option></select></div>
+        <div class="field"><label for="frameMin">Frame vanaf</label><div class="unit"><input id="frameMin" type="number" min="40" max="70" placeholder="56"></div></div>
+        <div class="field"><label for="frameMax">Frame tot</label><div class="unit"><input id="frameMax" type="number" min="40" max="70" placeholder="geen"></div></div>
+        <div class="field"><label for="sort">Sorteren</label><select id="sort"><option value="newest">Nieuwste eerst</option><option value="price_asc">Prijs laag-hoog</option><option value="price_desc">Prijs hoog-laag</option><option value="distance">Dichtbij eerst</option></select></div>
+      </div>
+      <div class="toggles">
+        <label><input type="checkbox" id="useMp" checked> Marktplaats</label>
+        <label><input type="checkbox" id="useFb" checked> Facebook</label>
+        <label><input type="checkbox" id="noAds" checked> Geen advertenties</label>
+        <label><input type="checkbox" id="smart" checked> Geen accessoires</label>
+        <label><input type="checkbox" id="inTitle" checked> Zoekwoorden in titel</label>
+        <label><input type="checkbox" id="private"> Alleen particulieren</label>
+        <label title="Verberg advertenties waar geen wielmaat of framemaat bij staat"><input type="checkbox" id="needSize"> Maat moet vermeld zijn</label>
+      </div>
+      <div class="chips" id="reqWrap">
+        <span class="small">Moet bevatten</span>
+        <span class="chips" id="reqList"></span>
+        <input id="rq" class="wordin" placeholder="+ woord, Enter" aria-label="Woord dat erin moet staan">
+      </div>
+      <div class="chips" id="exWrap">
+        <span class="small">Verberg woorden</span>
+        <span class="chips" id="exList"></span>
+        <input id="ex" class="wordin" placeholder="+ woord, Enter" aria-label="Woord om te verbergen">
+        <span class="chips" id="exSug"></span>
+      </div>
+      </details>
+      <div class="foot">
+        <button class="ghost" type="button" id="alarmBtn">🔔 Maak hiervan een alarm</button>
+        <button class="ghost" type="button" id="defaultSave">★ Bewaar als standaard</button>
+        <button class="ghost" type="button" id="defaultLoad" hidden></button>
+      </div>
+    </form>
+    <div class="status" id="status"></div>
+    <div class="results" id="results"><div class="empty">Zoek hierboven. Marktplaats en Facebook komen hier samen, zonder advertenties en accessoires.</div></div>
+  </section>
+
+  <section id="alarms" hidden>
+    <div class="alarmlist" id="alarmList"></div>
+  </section>
+</div>
+
+<dialog id="alarmDlg">
+  <form method="dialog" id="alarmForm">
+    <h2>Nieuw alarm</h2>
+    <p class="muted" id="alarmSummary"></p>
+    <fieldset>
+      <legend>Waarschuw mij via</legend>
+      <label><input type="checkbox" name="ch" value="browser" checked> Melding + geluid in de browser</label>
+      <label><input type="checkbox" name="ch" value="ntfy"> Push op je telefoon (ntfy) <em class="muted" data-off="ntfy"></em></label>
+      <label><input type="checkbox" name="ch" value="email"> E-mail <em class="muted" data-off="email"></em></label>
+    </fieldset>
+    <div class="field"><label for="interval">Controleer elke</label>
+      <select id="interval"><option value="5">5 minuten</option><option value="10" selected>10 minuten</option><option value="15">15 minuten</option><option value="30">30 minuten</option><option value="60">uur</option></select></div>
+    <p class="muted">Je krijgt alleen meldingen over advertenties die na het aanmaken verschijnen.</p>
+    <div class="actions"><button class="ghost" value="cancel">Annuleren</button><button class="go" id="alarmSave" value="ok">Alarm maken</button></div>
+  </form>
+</dialog>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

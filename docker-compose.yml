@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      TZ: Europe/Amsterdam
+    ports:
+      - "127.0.0.1:8765:8765"  # the site, only this computer
+      - "127.0.0.1:6080:6080"  # noVNC, only used while logging in to Facebook
+    volumes:
+      - data:/data             # database + Facebook login
+    shm_size: "1gb"            # Chromium crashes with the default 64 MB
+
+volumes:
+  data:
